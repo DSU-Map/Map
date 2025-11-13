@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combined Mobile App Layout (Top Scroll & Bottom Sheet)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #map { 
+            width: 100%; 
+            height: 100%;
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+        }
+        :root {
+            --sheet-height-full: 50vh; /* 화면 높이의 절반 */
+            --main-bg-color: #f0f4f8;
+            --primary-color: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--main-bg-color);
+            margin: 0;
+            padding: 0;
+            /* 터치 액션: 가로 스크롤만 허용 (세로 스크롤은 JS가 처리) */
+            touch-action: pan-x; 
+        }
+
+        /* 0. Search Bar (검색바) */
+        #search-container {
+            padding: 15px 20px 10px 20px;
+            background: transparent; 
+            transform: translateX(0%);
+            width: 95%;
+            z-index: 10;
+        }
+
+        #search-input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 12px;
+            padding: 10px 15px;
+        }
+
+        #search-icon {
+            color: #6b7280; 
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        #search-input {
+            flex-grow: 1;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            outline: none;
+            color: #374151;
+        }
+        #search-input::placeholder {
+            color: #9ca3af; 
+        }
+
+        /* 1. Top Category Bar (상단 메뉴바.html) */
+        #category-scroller {
+            position: sticky; /* 상단 고정 */
+            top: 0; /* 검색바가 스크롤된 후 바로 아래 붙음 */
+            z-index: 50; /* Bottom Sheet보다 낮게 */
+            display: flex; 
+            overflow-x: auto; 
+            padding: 10px 10px 10px 10px;
+            background: transparent; /* 투명 */
+            max-width: 100%; 
+            
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        #category-scroller::-webkit-scrollbar {
+            display: none;
+        }
+
+        .restaurant-button {
+            flex-shrink: 0; /* 버튼이 줄어들지 않도록 */
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 15px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            background-color: white;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            outline: none;
+            transition: background-color 0.2s;
+            margin-right: 8px;
+        }
+
+        .burger-icon {
+            font-size: 1.1em;
+            margin-right: 5px;
+        }
+
+        .button-text {
+            font-weight: bold;
+        }
+
+        .restaurant-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* 2. Main Content (더미 콘텐츠) */
+        #main-content {
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .placeholder-box {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            min-height: 200px;
+        }
+
+        /* 4. Bottom Sheet */
+        .sheet-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-height: var(--sheet-height-full); /* 50vh */
+            background-color: white;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            
+            transform: translateY(100%); 
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
+        }
+
+        .bottom-sheet.is-dragging {
+             transition: none;
+        }
+
+        .sheet-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .sheet-overlay.active .bottom-sheet {
+            transform: translateY(0); 
+        }
+
+        .sheet-content {
+            padding: 20px;
+            /* 50vh에 맞추기 위해 높이 100% 사용 */
+            height: 100%; 
+            overflow-y: auto;
+        }
+        
+        #sheet-drag-handle {
+            padding-top: 15px; 
+            cursor: grab; 
+            user-select: none;
+            touch-action: none; 
+            position: relative;
+            z-index: 10;
+        }
+
+        .sheet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+        }
+
+        .handlebar {
+            width: 50px;
+            height: 5px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin: 0 auto;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <!-- 검색바 영역 (스크롤되면 사라짐) -->
+    <div id="search-container">
+        <div id="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass" id="search-icon"></i>
+            <input type="search" id="search-input" placeholder="장소, 메뉴, 테마를 검색하세요...">
+        </div>
+    </div>
+
+    <!-- 상단 카테고리 바 (Sticky) -->
+    <div id="category-scroller">
+        <button class="restaurant-button" onclick="showSheet()">
+            <i class="fa-solid fa-utensils burger-icon"></i>
+            <span class="button-text">식당</span>
+        </button>
+        <button class="restaurant-button" onclick="showSheet()">
+            <i class="fa-solid fa-mug-saucer burger-icon"></i>
+            <span class="button-text">카페</span>
+        </button>
+        <button class="restaurant-button" onclick="showSheet()">
+            <i class="fa-solid fa-store burger-icon"></i>
+            <span class="button-text">매점</span>
+        </button>
+        <button class="restaurant-button" onclick="showSheet()">
+            <i class="fa-solid fa-building burger-icon"></i>
+            <span class="button-text">편의시설</span>
+        </button>
+        <button class="restaurant-button" onclick="showSheet()">
+            <i class="fa-solid fa-music burger-icon"></i>
+            <span class="button-text">공연장</span>
+        </button>
+        <button class="restaurant-button" onclick="showSheet()">
+            <i class="fa-solid fa-cubes burger-icon"></i> 
+            <span class="button-text">기타</span>
+        </button>
+    </div>
+
+    <!-- 메인 콘텐츠 영역 -->
+        <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=0da54378e842829a12d7cb6a4c53a524&libraries=services"></script>
+        <script>
+            var mapContainer = document.getElementById('map');
+            var mapOption = {
+            center: new kakao.maps.LatLng(35.14569, 129.00901), 
+            level: 3
+            };
+            var map = new kakao.maps.Map(mapContainer, mapOption);
+        </script>
+    
+    <!-- Bottom Sheet 구조 -->
+    <div id="sheet-overlay" class="sheet-overlay" onclick="handleOverlayClick(event)">
+        
+        <div id="bottom-sheet" class="bottom-sheet">
+            
+            <div id="sheet-drag-handle">
+                <div class="handlebar"></div>
+            </div>
+
+            <div class="sheet-content">
+                <div class="sheet-header">
+                    <h2>필터 및 설정</h2>
+                    <button class="close-button" onclick="hideSheet()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <p style="font-size: 1.1em; color: #333; font-weight: bold;">제목</p>
+                
+                <!-- Bottom Sheet 콘텐츠 -->
+                <div style="padding: 15px; margin-top: 20px; border: 2px solid var(--primary-color); border-radius: 10px;">
+                    <h3>부제 1</h3>
+                    <p>설명</p>
+                </div>
+                <div style="padding: 15px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 10px; height: 150px;">
+                    <h3>부제 2</h3>
+                    <p>설명</p>
+                </div>
+                <div style="padding: 15px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 10px; height: 150px;">
+                    <h3>부제 3</h3>
+                    <p>설명</p>
+                </div>
+                <div style="padding: 15px; margin-top: 15px; border: 1px dashed #ccc; border-radius: 10px; height: 300px;">
+                    <h3>부제 4</h3>
+                    <p>설명</p>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const sheetOverlay = document.getElementById('sheet-overlay');
+        const bottomSheet = document.getElementById('bottom-sheet');
+        const dragHandle = document.getElementById('sheet-drag-handle');
+        
+        let isDragging = false;
+        let startY = 0;
+        let sheetTop = 0; 
+        let currentY = 0;
+        let frameRequested = false;
+        let dragStartTime = 0;
+
+        const windowHeight = window.innerHeight;
+        // 시트가 최대로 열릴 때의 Y 좌표 (50vh)
+        const fullyOpenY = windowHeight * 0.5; 
+        // 시트를 닫기 위한 Y 좌표 임계값 (화면 높이의 70%)
+        const closeThreshold = windowHeight * 0.7; 
+
+        /**
+         * Bottom Sheet를 엽니다.
+         */
+        function showSheet() { 
+            sheetOverlay.classList.add('active');
+            // 완전히 열린 상태로 시작 (CSS max-height: 50vh가 적용됨)
+            bottomSheet.style.transform = 'translateY(0%)';
+        }
+
+        /**
+         * Bottom Sheet를 닫습니다.
+         */
+        function hideSheet() {
+            sheetOverlay.classList.remove('active');
+            bottomSheet.style.transform = 'translateY(100%)';
+        }
+
+        /**
+         * 드래그된 Y 위치에 따라 시트의 위치를 업데이트 (requestAnimationFrame 사용)
+         */
+        function updateSheetPosition() {
+            let newTop = sheetTop + (currentY - startY);
+            
+            // 시트가 화면 위로 벗어나지 않도록 제한 (50vh 위치를 넘지 않도록)
+            newTop = Math.max(newTop, fullyOpenY); 
+            
+            // transform 업데이트
+            bottomSheet.style.transform = `translateY(${newTop}px)`;
+
+            frameRequested = false;
+        }
+
+
+        /**
+         * 드래그 시작 (터치 또는 마우스)
+         */
+        function handleDragStart(e) {
+            if (e.button === 2) return; 
+
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            isDragging = true;
+            startY = clientY;
+            dragStartTime = Date.now();
+            
+            const rect = bottomSheet.getBoundingClientRect();
+            sheetTop = rect.top;
+            
+            // 드래그 시작 시 transition 제거
+            bottomSheet.classList.add('is-dragging');
+
+            e.preventDefault();
+        }
+
+        /**
+         * 드래그 중 (터치 또는 마우스)
+         */
+        function handleDragMove(e) {
+            if (!isDragging) return;
+            
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            currentY = clientY;
+
+            if (!frameRequested) {
+                requestAnimationFrame(updateSheetPosition);
+                frameRequested = true;
+            }
+            
+            // 기본 스크롤 이벤트 방지 (특히 모바일에서)
+            e.preventDefault(); 
+        }
+
+        /**
+         * 드래그 종료 (터치 또는 마우스)
+         */
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            bottomSheet.classList.remove('is-dragging');
+
+            const rect = bottomSheet.getBoundingClientRect();
+            const currentTop = rect.top;
+
+            // 닫기 임계점 검사: 시트가 화면 아래 70% 이상 내려갔으면 닫음
+            if (currentTop > closeThreshold) {
+                hideSheet();
+            } 
+            // 열기 임계점 검사: 시트가 충분히 올라왔으면 완전히 엶 (50vh 위치)
+            else {
+                // fullyOpenY에 해당하는 픽셀 위치로 이동
+                bottomSheet.style.transform = 'translateY(0%)'; 
+            }
+
+            // 드래그 시간이 짧으면 클릭으로 간주될 수 있으므로, 드래그 상태 해제 후 잠시 클릭 방지
+            setTimeout(() => {
+                dragStartTime = 0;
+            }, 50); 
+        }
+
+        /**
+         * 오버레이 클릭 처리 (클릭 오작동 방지 포함)
+         */
+        function handleOverlayClick(e) {
+            // 드래그 직후 (50ms 이내) 오버레이 클릭은 무시
+            if (Date.now() - dragStartTime < 50) return;
+
+            // 시트 본체를 클릭한 경우 닫지 않음
+            if (e.target.closest('#bottom-sheet')) {
+                return;
+            }
+            
+            hideSheet();
+        }
+
+        // --- 이벤트 리스너 연결 ---
+
+        // 드래그 핸들 (sheet-drag-handle)에 이벤트 연결
+        dragHandle.addEventListener('mousedown', handleDragStart);
+        dragHandle.addEventListener('touchstart', handleDragStart);
+
+        // 문서 전체에 이동/종료 이벤트 연결 
+        document.addEventListener('mousemove', handleDragMove);
+        document.addEventListener('touchmove', handleDragMove, { passive: false }); 
+        document.addEventListener('mouseup', handleDragEnd);
+        document.addEventListener('touchend', handleDragEnd);
+        
+    </script>
+</body>
+
+</html>
