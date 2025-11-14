@@ -67,7 +67,6 @@
             background: none;
             border: none;
             cursor: pointer;
-            padding: 5px;
             font-size: 1em;
             color: #333;
             outline: none; 
@@ -247,3 +246,4 @@
             border: 1px solid #ccc;
 
         }
+
