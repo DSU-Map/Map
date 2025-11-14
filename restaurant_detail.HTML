@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상세 정보</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="restaurant_detail.css">
+</head>
+<body>
+    <!-- 검색바 영역 -->
+    <div class="Search">
+        <div id="search-container">
+            <div id="search-input-wrapper">
+                <i class="fa-solid fa-magnifying-glass" id="search-icon"></i> 
+                <input type="search" id="search-input" placeholder="장소를 검색하세요...">
+            </div>
+        </div>
+            <button class="menu-label" onclick="history.back()">
+                <i class="fa-solid fa-undo fa-lg"></i>
+            </button>
+        </div>
+    </div>
+        <!-- 탭 -->
+    <div class="tab-container">
+
+        <!-- 시설 정보 -->
+        <div class="tab active" data-tab="info">
+            <span class="tab-line">
+                <i class="fa-solid fa-building tab-icon"></i>
+                <span class="tap-text">시설 정보</span>
+            </span>
+        </div>
+
+        <!-- 메뉴 -->
+        <div class="tab" data-tab="menu">
+            <span class="tab-line">
+                <i class="fa-solid fa-mug-saucer tab-icon"></i>
+                <span class="tap-text">메뉴</span>
+            </span>
+        </div>
+
+    </div>
+
+    <div>
+        <!-- 시설 정보 -->
+        <div class="content active" id="info">
+            <div class="map-section">
+                <div class="map-icon">
+                    <i class="fa-regular fa-map fa-2xl"></i>
+                </div>
+                <strong>건물 내부 지도</strong>
+            </div>
+
+            <div class="info-list">
+                <div class="info-item">
+                    <span class="icon"><i class="fa-solid fa-location-dot"></i></span>
+                    <span>(위치)</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon"><i class="fa-solid fa-phone"></i></span>
+                    <span>(전화번호)</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon"><i class="fa-regular fa-clock"></i></span>
+                    <div class="time-details">
+                        <p class="time-line">(중식)</p>
+                        <p class="time-line">(석식)</p>
+                        <p class="time-line">(주말·공휴일)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-header">
+                <span class="icon"><i class="fa-solid fa-utensils"></i></span>
+                <span>식당 정보</span>
+            </div>
+
+            <div class="info-text-area">
+                <p>(설명 1)</p>
+            </div>
+        </div>
+
+        <!-- 메뉴 -->
+        <div class="content" id="menu">
+            <div class="menu-section">
+                    <div class="menu-title-bar">
+                        <div class="menu-header-left">
+                            <span class="menu-icon-wrap"><i class="fa-solid fa-list-ul"></i></span>
+                            <strong>식단표</strong>
+                        </div>
+                        <button class="menu-label">원산지</button>
+                    </div>
+
+                    <div class="menu-list-container">
+                        <div class="menu-column">
+                            <ul>
+                                <p>중식</p>
+                                <li>(밥)</li>
+                                <li>(국)</li>
+                                <li>(메인 반찬)</li>
+                                <li>(반찬 1)</li>
+                                <li>(반찬 2)</li>
+                                <li>(반찬 3)</li>
+                                <li>(반찬 4)</li>
+                            </ul>
+                        </div>
+
+                        <div class="menu-column">
+                            <ul>
+                                <p>석식</p>
+                                <li>(밥)</li>
+                                <li>(국)</li>
+                                <li>(메인 반찬)</li>
+                                <li>(반찬 1)</li>
+                                <li>(반찬 2)</li>
+                                <li>(반찬 3)</li>
+                                <li>(반찬 4)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".content");
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+
+                // 탭 active 처리
+                tabs.forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+
+                // 콘텐츠 active 처리
+                contents.forEach(c => c.classList.remove("active"));
+                const target = tab.dataset.tab;
+                document.getElementById(target).classList.add("active");
+            });
+        });
+    </script>
+</div>
+
+</body>
+</html>

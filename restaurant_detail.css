@@ -1,0 +1,248 @@
+    :root {
+            --main-background-color:white;
+            --main-text-color:#5f5f5f;
+            --main-padding: 0 2%;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            font-size: 15px;
+        }
+
+        .Search {
+            flex: 1;
+            display: flex;
+            padding: 1% 2%; /* 위, 아래 = 1%, 좌, 우 = 2% */
+        }
+
+        /* 0. Search Bar (검색바) */
+        #search-container {
+            position: sticky; 
+            width: 96%; 
+            z-index: 10;
+            box-shadow: 0 1px 3px transparent; /* 외형 */
+            margin-right: auto;
+        }
+
+        #search-input-wrapper {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            border-radius: 12px;
+            padding: 10px 10px;
+        }
+
+        #search-icon { /* 검색바 아이콘 */
+            color: #6b7280; 
+            margin-right: 10px;
+            font-size: 1.1em;
+        }
+
+        #search-input {
+            flex-grow: 1;
+            border: none;
+            font-size: 16px;
+            outline: none; 
+            background-color: transparent;
+            color: #374151;
+        }
+
+        /* 입력 필드 스타일 조정 */
+        .header input {
+            flex-grow: 1;
+            padding: 0; 
+            border: none;
+            background-color: transparent; 
+            border-radius: 0;
+            margin-right: 0;
+            font-size: 0.95em;
+            outline: none; 
+        }
+        
+        .back-button {  /* 되돌아가기 버튼 */
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 1em;
+            color: #333;
+            outline: none; 
+            width: 4%;
+        }
+
+        /* 탭 영역 */
+        .tab-container {
+            display: flex;
+            width: 100%;
+        }
+
+        /* 탭 버튼 */
+        .tab {
+            -webkit-tap-highlight-color: transparent;
+            flex: 1;
+            display: flex;
+            align-items: center;    /* 세로 중앙정렬 */
+            justify-content: center;    /* 가로 중앙정렬 */
+            flex-direction: row;    /* 아이콘 + 텍스트 가로 배치 */
+            white-space: nowrap;    /* 줄바꿈 방지 */
+            gap: 6px;   /* 아이콘-글자 간격 */
+            padding: 12px 0;    /* 위 아래에 패딩 추가 */
+            cursor: pointer;    /* 클릭가능하게함 */
+            font-size: 18px;
+            color: #b5b5b5;
+            position: relative;
+        }
+
+        .tab-icon {
+            font-size: 18px;
+        }
+
+        .tab-text {
+            font-weight: bold;
+        }
+
+        .tab-line {
+            padding: 2px 12px;
+            font-weight: 600;
+        }
+
+        .tab.active .tab-line{
+            color: #333;
+            border-bottom: 3px solid;
+        }
+
+        /* 콘텐츠 */
+        .content {
+            display: none;
+            padding: var(--main-padding);
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        .content-box {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            line-height: 1.6;
+        }
+
+        .map-section {
+            text-align: center;
+            padding: 30px 20px;
+            margin: 12px;
+            background-color: #f1f1f1;
+            border-radius: 10px;
+        }
+        .map-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+            line-height: 1;
+        }
+        .info-list {
+            padding: 0 15px;
+            margin-bottom: 8px; 
+        }
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 8px 0;
+        }
+        .icon {
+            font-size: 18px; 
+            width: 22px; 
+            text-align: center;
+            margin-right: 8px; 
+            color: #555;
+        }
+
+        .time-details p {
+            margin: 0;
+        }
+        .time-details p + p { 
+            margin-top: 3px;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            font-weight: bold;
+            margin-top: 8px; 
+        }
+
+        .info-text-area {
+            padding: var(--main-padding);
+            margin-bottom: 12px; 
+        }
+        .info-text-area p {
+            margin: 0;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .menu-section {
+            padding: 12px; 
+        }
+        .menu-title-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px; 
+        }
+
+        .menu-header-left {
+            display: flex;
+            align-items: center;
+        }
+        .menu-icon-wrap {
+            font-size: 1em; 
+            margin-right: 6px; 
+        }
+        .menu-list-container {
+            display: flex;
+            gap: 12px; 
+            flex-wrap: wrap; 
+        }
+        
+        .menu-column { /* 식단표 */
+            flex: 1 1 45%;
+            min-width: 50px; 
+            padding: 0;
+            background-color: #f1f1f1;
+            border-radius: 7px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+        }
+        
+        .menu-column p { /* 메인정보 중식, 석식 */
+            list-style: none;
+            margin: 0;
+            font-size: 1.2em;
+            line-height: 1.5; 
+            color: #444; 
+            padding: 8px 10px; 
+        }
+
+        .menu-column ul { /* 부가정보 (밥),(국)등등 */
+            list-style: none;
+            padding: 0 8px 8px 8px;
+            margin: 0;
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .menu-label { /* 원산지 버튼 */
+            background-color: #eee;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            color: #555;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
