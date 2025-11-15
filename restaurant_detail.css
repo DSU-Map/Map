@@ -21,9 +21,8 @@
         /* 0. Search Bar (검색바) */
         #search-container {
             position: sticky; 
-            width: 90%; 
+            width: 96%; 
             z-index: 10;
-            padding-right: 2%;
             box-shadow: 0 1px 3px transparent;
             margin-right: auto;
         }
@@ -67,6 +66,7 @@
             background: none;
             border: none;
             cursor: pointer;
+            padding: 5px;
             font-size: 1em;
             color: #333;
             outline: none; 
@@ -206,6 +206,7 @@
             display: flex;
             gap: 12px; 
             flex-wrap: wrap; 
+            padding-bottom: 2%;
         }
         
         .menu-column { /* 식단표 */
@@ -244,6 +245,4 @@
             font-weight: bold;
             cursor: pointer;
             border: 1px solid #ccc;
-
         }
-
