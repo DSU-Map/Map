@@ -1,0 +1,46 @@
+name: 🗓️ Scheduled Data Update (Menu OCR)
+
+on:
+  # 매일 새벽 2시 (UTC)에 실행되도록 예약 설정 (KST 기준 오전 11시)
+  schedule:
+    - cron: '0 2 * * *'
+  # 수동 실행을 위한 워크플로우 디스패치 추가
+  workflow_dispatch:
+
+jobs:
+  run_python_script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. 코드 체크아웃
+      uses: actions/checkout@v4
+      with:
+        # 워크플로우 내에서 커밋을 할 수 있도록 권한 설정
+        token: ${{ secrets.GITHUB_TOKEN }} 
+        
+    - name: 2. 파이썬 환경 설정
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11' 
+        
+    - name: 3. 필수 라이브러리 설치
+      run: |
+        pip install google-genai pillow
+        
+    - name: 4. 파이썬 스크립트 실행 및 JSON 생성
+      run: |
+        # 프로젝트 루트에서 스크립트를 실행하고 JSON 파일 생성
+        python backend/ocr_importer_local.py
+      env:
+        # ✅ 중요: Gemini API 키 환경 변수 설정
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
+        
+    - name: 5. 변경된 JSON 파일 커밋 및 푸시
+      run: |
+        # 변경된 파일이 있는지 확인 (menu_data.json)
+        git status
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add Map/Public/menu_data.json
+        git commit -m "chore(data): 자동 스케줄링된 식단 데이터 업데이트 [skip ci]" || echo "변경 사항 없음"
+        git push
