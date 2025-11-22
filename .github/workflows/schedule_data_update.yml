@@ -1,41 +1,54 @@
-name: Schedule Data Update
+name: Scheduled Data Update
 
 on:
-  schedule:
-    - cron: "0 */6 * * *"  # 6시간마다 실행
   workflow_dispatch:
+  schedule:
+    - cron: "0 * * * *"   # 매 시간 정각마다 실행(원하면 수정 가능)
 
 jobs:
-  update-data:
+  update:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      # 1) 저장소 체크아웃
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Show working directory (debug)
-      run: |
-        echo "PWD:"
-        pwd
-        echo "List:"
-        ls -R .
+      # 2) 현재 위치와 폴더 구조 출력 (필수 디버그)
+      - name: Debug workspace
+        run: |
+          echo "===== CURRENT WORKING DIRECTORY ====="
+          pwd
+          echo ""
+          echo "===== LIST ROOT DIRECTORY ====="
+          ls -al .
+          echo ""
+          echo "===== FULL RECURSIVE DIRECTORY TREE ====="
+          ls -R .
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      # 3) Python 설치 (필요하면)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install dependencies
-      run: pip install -r backend/requirements.txt
+      # 4) backend로 이동 (backend 없으면 제거 가능)
+      - name: Change directory to backend
+        run: cd backend || echo "⚠ backend 폴더 없음 (무시해도 됨)"
 
-    - name: Run Python script
-      run: |
-        python backend/ocr_importer_local.py
+      # 5) requirements 설치 (backend에 파일이 없다면 에러 안 나게 처리)
+      - name: Install requirements
+        run: |
+          if [ -f backend/requirements.txt ]; then
+            pip install -r backend/requirements.txt
+          else
+            echo "⚠ requirements.txt 없음 → 설치 스킵"
+          fi
 
-    - name: Commit and push JSON file
-      run: |
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git add Map/Public/menu_data.json
-        git commit -m "Update menu data" || echo "No changes to commit"
-        git push
+      # 6) 실제 실행할 스크립트 (원래 목적에 따라 수정)
+      - name: Run script
+        run: |
+          echo "실행할 Python 스크립트가 있으면 여기 적기"
+          echo "예: python backend/update_data.py"
+          echo "지금은 아무것도 실행 안 함"
+
