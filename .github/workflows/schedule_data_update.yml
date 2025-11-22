@@ -7,18 +7,14 @@ on:
 
 jobs:
   run_python_script:
-    # ✅ 최종 수정: 작업 디렉토리를 코드의 실제 루트 폴더(Map/)로 고정
-    defaults:
-      run:
-        working-directory: Map 
-        
     runs-on: ubuntu-latest
 
     steps:
-    - name: 1. 코드 체크아웃
+    - name: 1. 코드 체크아웃 (경로 고정)
       uses: actions/checkout@v4
       with:
-        # ✅ 기본 체크아웃 사용 (path는 제거)
+        # ✅ 코드를 'DSUMAP_ROOT' 폴더에 다운로드하여 경로 충돌을 방지
+        path: 'DSUMAP_ROOT' 
         token: ${{ secrets.GITHUB_TOKEN }} 
         
     - name: 2. 파이썬 환경 설정
@@ -32,16 +28,16 @@ jobs:
         
     - name: 4. 파이썬 스크립트 실행 및 JSON 생성
       run: |
-        # ✅ 작업 디렉토리가 'Map/'으로 설정되었으므로 바로 'backend/' 경로를 사용
-        python backend/ocr_importer_local.py
+        # ✅ 'DSUMAP_ROOT' 폴더를 기준으로 실행 경로 지정
+        python DSUMAP_ROOT/backend/ocr_importer_local.py
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
         
     - name: 5. 변경된 JSON 파일 커밋 및 푸시
       run: |
-        # ✅ CWD가 'Map/'이므로 Map/ 폴더를 생략하고 Public/부터 시작합니다.
+        # JSON 파일 경로도 'DSUMAP_ROOT' 기준으로 지정
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add Map/Public/menu_data.json
+        git add DSUMAP_ROOT/Map/Public/menu_data.json
         git commit -m "chore(data): 자동 스케줄링된 식단 데이터 업데이트 [skip ci]" || echo "변경 사항 없음"
         git push
