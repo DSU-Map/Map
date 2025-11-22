@@ -1,0 +1,26 @@
+name: Debug Paths
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Show working directory info
+      run: |
+        echo "===== CURRENT WORKING DIRECTORY ====="
+        pwd
+        echo ""
+        
+        echo "===== LIST ROOT DIRECTORY ====="
+        ls -al
+        echo ""
+        
+        echo "===== FULL RECURSIVE DIRECTORY TREE ====="
+        ls -R .
+        echo ""
