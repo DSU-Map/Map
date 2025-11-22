@@ -38,7 +38,7 @@ jobs:
         
     - name: 5. 변경된 JSON 파일 커밋 및 푸시
       run: |
-        # 변경된 파일 경로도 'DSUMAP_ROOT' 기준으로 지정
+        # JSON 파일 경로와 커밋 대상 경로도 'DSUMAP_ROOT' 기준으로 지정
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add DSUMAP_ROOT/Map/Public/menu_data.json
