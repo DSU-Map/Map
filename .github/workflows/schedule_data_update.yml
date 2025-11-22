@@ -1,14 +1,10 @@
-name: 🗓️ Update Menu Data
+name: 🗓️ Update Menu Data (Final)
 
 on:
-  # 수동 실행을 위한 트리거
   workflow_dispatch:
-  # ✅ 이미지 파일(JPG/PNG) 업로드 시 자동 실행되도록 수정
   push:
     paths:
-      - 'backend/**.jpg' 
-      - 'backend/**.png'
-  # 선택 사항: 주기적 스케줄 실행 (매일 KST 11:00 AM)
+      - 'backend/**' # backend 폴더 내 모든 파일 변경 시 트리거
   schedule:
     - cron: "0 2 * * *" # UTC 02:00
 
@@ -20,6 +16,7 @@ jobs:
       # 1. 저장소 체크아웃
       - name: 1. Checkout repository
         uses: actions/checkout@v4
+        # ✅ path 설정 제거
 
       # 2. Python 환경 설정
       - name: 2. Set up Python
@@ -29,14 +26,14 @@ jobs:
 
       # 3. 필수 라이브러리 설치
       - name: 3. Install Dependencies
+        # ✅ CWD가 프로젝트 루트이므로 바로 pip install
         run: pip install google-genai pillow
 
-     
+      # 4. 🚀 OCR 스크립트 실행 (최종 단순 경로)
       - name: 4. Run OCR script
         run: |
-          # ✅ Map 폴더로 이동하여 경로 충돌 문제를 우회합니다.
-          cd Map 
-          python backend/ocr_importer_local.py
+          # ✅ CWD가 프로젝트 루트이므로 Map/ 폴더를 명시하고 실행합니다.
+          python Map/backend/ocr_importer_local.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
@@ -46,7 +43,7 @@ jobs:
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           
-          # ✅ Map 폴더 안의 Public/ 경로를 git add 합니다.
+          # ✅ Map/Public/menu_data.json 파일을 git add 합니다.
           git add Map/Public/menu_data.json
           
           git commit -m "chore(data): Auto-update menu data [skip ci]" || echo "No changes to commit"
