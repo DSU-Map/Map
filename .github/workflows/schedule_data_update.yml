@@ -7,10 +7,10 @@ on:
 
 jobs:
   run_python_script:
-    # ✅ 기본 작업 디렉토리를 DSUMAP_ROOT로 설정
+    # ✅ 최종 수정: 작업 디렉토리를 코드의 실제 루트 폴더(Map/)로 고정
     defaults:
       run:
-        working-directory: DSUMAP_ROOT 
+        working-directory: Map 
         
     runs-on: ubuntu-latest
 
@@ -18,7 +18,7 @@ jobs:
     - name: 1. 코드 체크아웃
       uses: actions/checkout@v4
       with:
-        # ✅ path: 'DSUMAP_ROOT'는 제거하고, 토큰만 남김
+        # ✅ 기본 체크아웃 사용 (path는 제거)
         token: ${{ secrets.GITHUB_TOKEN }} 
         
     - name: 2. 파이썬 환경 설정
@@ -32,14 +32,14 @@ jobs:
         
     - name: 4. 파이썬 스크립트 실행 및 JSON 생성
       run: |
-        # ✅ 작업 디렉토리가 DSUMAP_ROOT이므로 바로 backend/ 실행
+        # ✅ 작업 디렉토리가 'Map/'으로 설정되었으므로 바로 'backend/' 경로를 사용
         python backend/ocr_importer_local.py
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
         
     - name: 5. 변경된 JSON 파일 커밋 및 푸시
       run: |
-        # ✅ CWD가 DSUMAP_ROOT이므로 Map/Public/으로 바로 접근
+        # ✅ CWD가 'Map/'이므로 Map/ 폴더를 생략하고 Public/부터 시작합니다.
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add Map/Public/menu_data.json
