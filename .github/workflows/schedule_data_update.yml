@@ -8,17 +8,12 @@ on:
 jobs:
   run_python_script:
     runs-on: ubuntu-latest
-    # ✅ 작업 디렉토리를 Map 폴더 안으로 고정합니다.
-    defaults:
-      run:
-        working-directory: Map
 
     steps:
     - name: 1. 코드 체크아웃
       uses: actions/checkout@v4
       with:
-        # ✅ 코드를 'Map' 폴더에 다운로드하도록 강제합니다.
-        path: 'Map' 
+        # ✅ path 설정 제거: 코드를 기본 경로에 다운로드합니다.
         token: ${{ secrets.GITHUB_TOKEN }} 
         
     - name: 2. 파이썬 환경 설정
@@ -27,21 +22,24 @@ jobs:
         python-version: '3.11' 
         
     - name: 3. 필수 라이브러리 설치
-      # ✅ CWD가 'Map'이므로 명령어만 실행
-      run: pip install google-genai pillow
+      run: |
+        # ✅ 'Map/' 폴더로 이동 후 설치
+        cd Map 
+        pip install google-genai pillow
         
     - name: 4. 파이썬 스크립트 실행 및 JSON 생성
       run: |
-        # ✅ CWD가 'Map'이므로 바로 'backend/' 경로를 사용
+        # ✅ 'Map/' 폴더로 이동 후 실행
+        cd Map 
         python backend/ocr_importer_local.py
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
         
     - name: 5. 변경된 JSON 파일 커밋 및 푸시
       run: |
-        # ✅ CWD가 'Map'이므로 'Public/menu_data.json'으로 접근
+        # ✅ CWD가 'Map/'의 상위이므로 'Map/Public/' 경로를 지정합니다.
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git add Public/menu_data.json
+        git add Map/Public/menu_data.json
         git commit -m "chore(data): 자동 스케줄링된 식단 데이터 업데이트 [skip ci]" || echo "변경 사항 없음"
         git push
