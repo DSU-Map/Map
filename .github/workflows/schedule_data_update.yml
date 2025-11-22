@@ -15,7 +15,7 @@ jobs:
     - name: 1. 코드 체크아웃 (경로 고정)
       uses: actions/checkout@v4
       with:
-        # ✅ 저장소 코드를 'DSUMAP_ROOT' 폴더에 다운로드하여 경로 충돌을 방지
+        # ✅ 저장소 코드를 'DSUMAP_ROOT' 폴더에 다운로드
         path: 'DSUMAP_ROOT' 
         token: ${{ secrets.GITHUB_TOKEN }} 
         
@@ -30,15 +30,15 @@ jobs:
         
     - name: 4. 파이썬 스크립트 실행 및 JSON 생성
       run: |
-        # ✅ 'DSUMAP_ROOT' 폴더를 기준으로 실행 경로 지정
-        python DSUMAP_ROOT/backend/ocr_importer_local.py
+        # ✅ 'DSUMAP_ROOT' 폴더로 이동 후, 상대 경로로 스크립트 실행
+        cd DSUMAP_ROOT
+        python backend/ocr_importer_local.py
       env:
-        # Gemini API 키 환경 변수 설정
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 
         
     - name: 5. 변경된 JSON 파일 커밋 및 푸시
       run: |
-        # JSON 파일 경로와 커밋 대상 경로도 'DSUMAP_ROOT' 기준으로 지정
+        # CWD가 DSUMAP_ROOT로 변경되었더라도 git 명령어는 루트에서 실행 가능하므로 절대 경로를 사용
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git add DSUMAP_ROOT/Map/Public/menu_data.json
