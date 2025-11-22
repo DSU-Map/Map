@@ -2,8 +2,7 @@ name: 🗓️ Update Menu Data (CROSS-REPO FIX)
 
 on:
   workflow_dispatch:
-  # 이미지 파일 변경 시 자동 실행은 Map 저장소에 한정되므로, 
-  # backend 저장소의 변경은 스케줄 또는 수동 실행을 권장합니다.
+  # 이미지 변경 감지 대신, 권한 문제 해결을 위해 스케줄 실행을 주로 사용합니다.
   schedule:
     - cron: "0 2 * * *" # UTC 02:00 (KST 11:00 AM)
 
@@ -12,21 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 📂 스크립트가 있는 'backend' 저장소 다운로드
+      # 1. 📂 스크립트가 있는 'backend' 저장소 다운로드 (실행 소스)
       - name: 1. Checkout Backend Repository (Script Source)
         uses: actions/checkout@v4
         with:
           repository: DSU-Map/backend
           path: backend_repo # 스크립트 파일을 이 폴더에 저장
-          token: ${{ secrets.GITHUB_TOKEN }} # 비공개 저장소 접근 토큰
+          # ⚠️ 토큰 이름: Secret에 등록한 개인 액세스 토큰(PAT) 이름을 사용해야 합니다.
+          token: ${{ secrets.REPO_ACCESS_TOKEN }} 
 
-      # 2. 📂 JSON 파일을 저장할 'Map' 저장소 다운로드
+      # 2. 📂 JSON 파일을 저장할 'Map' 저장소 다운로드 (최종 저장 위치)
       - name: 2. Checkout Map Project (JSON Target)
         uses: actions/checkout@v4
         with:
           repository: DSU-Map/Map
           path: Map_Project # JSON 파일을 커밋할 폴더
-
+          
       # 3. Python 환경 및 라이브러리 설치
       - name: 3. Set up Python and Install Dependencies
         uses: actions/setup-python@v4
@@ -40,8 +40,7 @@ jobs:
       - name: 4. Run OCR script
         working-directory: backend_repo # 스크립트 폴더 안에서 실행
         run: |
-          # ✅ 중요: 스크립트 실행. ocr_importer_local.py 파일의 JSON 저장 경로가 
-          # 반드시 ../Map_Project/Public/menu_data.json을 가리켜야 합니다.
+          # ✅ 중요: 파이썬 스크립트는 JSON을 ../Map_Project/Public/에 저장하도록 수정되었습니다.
           python ocr_importer_local.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
