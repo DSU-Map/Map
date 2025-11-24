@@ -9,6 +9,9 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    # 🚨 1. [수정] Git Push 권한(contents: write)을 명시적으로 부여합니다.
+    permissions: 
+      contents: write # 이 권한이 있어야 변경된 파일을 커밋하고 푸시할 수 있습니다.
 
     steps:
       # 1. 📂 스크립트가 있는 'backend' 저장소 다운로드 (실행 소스)
@@ -17,8 +20,7 @@ jobs:
         with:
           repository: DSU-Map/backend
           path: backend_repo # 스크립트 파일을 이 폴더에 저장
-          # ⚠️ 토큰 이름: Secret에 등록한 개인 액세스 토큰(PAT) 이름을 사용해야 합니다.
-          token: ${{ secrets.REPO_ACCESS_TOKEN }} 
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}  # 백엔드 레포 접근용 토큰
 
       # 2. 📂 JSON 파일을 저장할 'Map' 저장소 다운로드 (최종 저장 위치)
       - name: 2. Checkout Map Project (JSON Target)
@@ -26,13 +28,15 @@ jobs:
         with:
           repository: DSU-Map/Map
           path: Map_Project # JSON 파일을 커밋할 폴더
-          
+          # ⚠️ 주의: 5단계의 Push를 위해 여기서도 토큰을 사용하거나, 위에서 부여한 GITHUB_TOKEN 권한을 사용해야 합니다.
+          # 현재는 5단계에서 PAT를 사용하여 Push합니다.
+
       # 3. Python 환경 및 라이브러리 설치
       - name: 3. Set up Python and Install Dependencies
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      
+        
       - name: Install Dependencies
         run: pip install google-genai pillow
 
@@ -40,7 +44,7 @@ jobs:
       - name: 4. Run OCR script
         working-directory: backend_repo # 스크립트 폴더 안에서 실행
         run: |
-          # ✅ 중요: 파이썬 스크립트는 JSON을 ../Map_Project/Public/에 저장하도록 수정되었습니다.
+          # ✅ 중요: 파이썬 스크립트는 JSON을 ../Map_Project/에 저장해야 합니다.
           python ocr_importer_local.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -52,9 +56,16 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
           
-          # Public/menu_data.json 파일이 Map_Project 폴더 안에 있다고 가정
-          git add Public/menu_data.json
+          # 🚨 2. [수정] git add 경로 수정: 
+          # 로그에서 JSON이 Map_Project 루트에 있음을 확인했으므로, 경로를 Public/에서 root로 수정했습니다.
+          # 만약 Public 폴더에 저장하는 것이 맞다면, Python 코드를 수정해야 합니다.
+          git add menu_data.json 
+
+          # 3. [수정] Git Commit 명령어 보완: 
+          # commit이 실패하더라도 워크플로우를 중단하지 않도록 || true를 사용합니다.
+          # [skip ci]를 넣어 Push로 인해 다시 워크플로우가 실행되는 것을 방지합니다.
+          git commit -m "chore(data): Auto-update menu data [skip ci]" || true
           
-          git commit -m "chore(data): Auto-update menu data [skip ci]" || echo "No changes to commit"
-          # Map 저장소에 푸시
-          git push
+          # 🚨 4. [수정] Push 인증 추가: 
+          # Git 명령에 PAT를 사용하여 DSU-Map/Map 저장소에 쓰기 권한을 부여합니다.
+          git push https://${{ secrets.REPO_ACCESS_TOKEN }}@github.com/DSU-Map/Map.git
